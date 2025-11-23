@@ -1,1 +1,689 @@
+<!DOCTYPE html>
+<html lang="lv">
 
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <title>Coffee Society | Rīga</title>
+    <meta name="description"
+        content="Izzini kafiju kopā ar mums! Coffee Society - cozy specialty coffee shop at Tērbatas iela 72, Riga. Great coffee, seasonal drinks, and warm atmosphere." />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Coffee Society | Rīga" />
+    <meta property="og:description" content="Specialty coffee shop in the heart of Riga. Tērbatas iela 72." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image"
+        content="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&q=80&w=1200" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        coffee: {
+                            base: '#c4a38a',
+                            light: '#dccdc1',
+                            dark: '#8a6e5a',
+                        },
+                        cream: {
+                            DEFAULT: '#f6f1ea',
+                            dark: '#ebe2d6',
+                        },
+                        black: '#1a1a1a', // Softer black
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                        'fadeIn': 'fadeIn 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scrollbar for menu */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Safe area for sticky bottom bar on mobile */
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .h-safe-bottom {
+            height: env(safe-area-inset-bottom);
+        }
+    </style>
+
+    <!-- Import Map for React & Lucide -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://aistudiocdn.com/react@^19.2.0",
+        "react/": "https://aistudiocdn.com/react@^19.2.0/",
+        "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+        "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client"
+      }
+    }
+    </script>
+    <!-- Babel for in-browser compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+
+<body class="bg-cream text-black antialiased">
+    <div id="root"></div>
+
+    <!-- Main Application Script -->
+    <script type="text/babel" data-type="module" data-presets="typescript,react">
+        import React, { useState, useEffect } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { Coffee, Star, Droplets, Phone, MapPin, Sparkles, Leaf, Wand2, RefreshCw, Clock, Instagram, ArrowDown, ExternalLink } from 'lucide-react';
+
+        // --- CONSTANTS & DATA ---
+
+        const CONTACT_INFO = {
+            phone: '26041862',
+            address: 'Tērbatas iela 72, Centra rajons, Rīga, LV-1001',
+            instagram: 'https://www.instagram.com/coffee__society_/',
+            mapsLink: 'https://maps.app.goo.gl/RigaPlaceHolder',
+        };
+
+        const OPENING_HOURS = [
+            { day: 'Monday', time: '08:00 – 20:00' },
+            { day: 'Tuesday', time: '08:00 – 20:00' },
+            { day: 'Wednesday', time: '08:00 – 20:00' },
+            { day: 'Thursday', time: '08:00 – 20:00' },
+            { day: 'Friday', time: '08:00 – 20:00' },
+            { day: 'Saturday', time: '10:00 – 19:00' },
+            { day: 'Sunday', time: '11:00 – 19:00' },
+        ];
+
+        const MENU_DATA = {
+            coffee: [
+                {
+                    id: 'coffee', items: [
+                        { name: 'Espresso', price: '2.1 / 2.6' },
+                        { name: 'Espresso Macchiato', price: '2.5 / 2.9' },
+                        { name: 'Americano', price: '3.3 / 3.8' },
+                        { name: 'Cortado', price: '3.3' },
+                        { name: 'Cappuccino', price: '3.4 / 3.9' },
+                        { name: 'Flat White', price: '3.8' },
+                        { name: 'Latte', price: '3.8 / 4.2' },
+                        { name: 'Mocha', price: '3.9 / 4.3' },
+                    ]
+                },
+                {
+                    id: 'alternative', items: [
+                        { name: 'Cotton Candy Latte', price: '4.3', description: 'Sweet & playful' },
+                        { name: 'Caramel Macchiato', price: '4.2' },
+                        { name: 'Espresso con Panna', price: '3.0 / 3.3' },
+                        { name: 'Tēja (Tea)', price: '3.4' },
+                        { name: 'Kakao', price: '3.9 / 4.2' },
+                        { name: 'Matcha', price: '3.9' },
+                        { name: 'Smūtijs (Smoothie)', price: '4.4' },
+                        { name: 'Babyccino', price: 'Bezmaksas' },
+                    ]
+                },
+                {
+                    id: 'seasonal', items: [
+                        { name: 'Kļavu-lazdu riekstu latte', price: '4.7', description: 'Maple syrup, hazelnut syrup, espresso, milk', isNew: true },
+                        { name: 'Riekstu-karameļu moka', price: '4.8', description: 'Hazelnut, caramel sauce, espresso, cocoa', isNew: true },
+                        { name: 'Banānu-šokolādes latte', price: '4.7', description: 'Banana syrup, chocolate sauce, espresso' },
+                        { name: 'Pikantais kļavu americano', price: '4.4', description: 'Spicy maple syrup, cinnamon, espresso' },
+                        { name: 'Kanēļa-bumbieru matcha', price: '4.6', description: 'Pear syrup, cinnamon, matcha, milk' },
+                        { name: 'Zelta rudens dzēriens', price: '4.4', description: 'Turmeric, nutmeg, cardamom, cinnamon, vanilla' },
+                    ]
+                }
+            ]
+        };
+
+        const TRANSLATIONS = {
+            lv: {
+                nav: { menu: 'Ēdienkarte', about: 'Par Mums', location: 'Kontakti', wizard: 'Kafijas Gids' },
+                hero: { subheadline: 'Izzini kafiju kopā ar mums', cta: 'Skatīt Ēdienkarti', orderOnline: 'Pasūti tiešsaistē caur Portsia' },
+                actions: { call: 'Zvanīt', map: 'Karte', open: 'Atvērts', closed: 'Slēgts' },
+                menu: {
+                    title: 'Mūsu Piedāvājums',
+                    categories: { coffee: 'Kafija', alternative: 'Kaut kas citādāks', seasonal: 'Rudens Īpašie' },
+                    sizes: 'Cenas norādītas par dažādiem izmēriem (S / L)',
+                },
+                about: {
+                    title: 'Kafijas Dvēsele',
+                    text: 'Coffee Society ir vairāk nekā tikai kafejnīca. Tā ir vieta Rīgas centrā, kur satiekas izcila garša un mājīga atmosfēra. Mēs rūpīgi izvēlamies pupiņas un veidojam dzērienus, kas sasilda gan ķermeni, gan dvēseli.',
+                },
+                location: {
+                    title: 'Atrašanās Vieta',
+                    address: 'Adrese',
+                    hours: 'Darba Laiks',
+                    contact: 'Sazinies ar mums',
+                },
+                wizard: {
+                    title: 'Nezini ko izvēlēties?',
+                    subtitle: 'Ļauj mums palīdzēt atrast tavu ideālo dzērienu',
+                    start: 'Sākt',
+                    question1: 'Kā tu šodien jūties?',
+                    question2: 'Kādu garšu tu vēlies?',
+                    result: 'Mēs tev iesakām:',
+                    restart: 'Mēģināt vēlreiz',
+                    options: {
+                        hot: 'Vēlos sasildīties',
+                        cold: 'Vēlos atspirdzināties',
+                        energy: 'Vajag enerģiju',
+                        relax: 'Vēlos atpūsties',
+                        sweet: 'Kaut ko saldu',
+                        classic: 'Klasisku garšu',
+                    }
+                },
+            },
+            en: {
+                nav: { menu: 'Menu', about: 'About', location: 'Location', wizard: 'Coffee Guide' },
+                hero: { subheadline: 'Discover coffee with us', cta: 'View Menu', orderOnline: 'Order online via Portsia' },
+                actions: { call: 'Call', map: 'Map', open: 'Open', closed: 'Closed' },
+                menu: {
+                    title: 'Our Menu',
+                    categories: { coffee: 'Coffee', alternative: 'Something Different', seasonal: 'Autumn Specials' },
+                    sizes: 'Prices shown for sizes (S / L)',
+                },
+                about: {
+                    title: 'Soul of the Place',
+                    text: 'Coffee Society is more than just a coffee shop. Located in the heart of Riga, it is where exceptional taste meets a cozy atmosphere. We carefully select our beans to craft drinks that warm both body and soul.',
+                },
+                location: {
+                    title: 'Location & Hours',
+                    address: 'Address',
+                    hours: 'Opening Hours',
+                    contact: 'Contact Us',
+                },
+                wizard: {
+                    title: 'Can\'t Decide?',
+                    subtitle: 'Let us help you find your perfect drink',
+                    start: 'Start',
+                    question1: 'How are you feeling?',
+                    question2: 'What flavor do you prefer?',
+                    result: 'We recommend:',
+                    restart: 'Try Again',
+                    options: {
+                        hot: 'Need Warmth',
+                        cold: 'Need Refreshment',
+                        energy: 'Need Energy',
+                        relax: 'Time to Relax',
+                        sweet: 'Something Sweet',
+                        classic: 'Classic Taste',
+                    }
+                },
+            },
+            ru: {
+                nav: { menu: 'Меню', about: 'О нас', location: 'Контакты', wizard: 'Гид' },
+                hero: { subheadline: 'Откройте мир кофе вместе с нами', cta: 'Смотреть меню', orderOnline: 'Заказывайте онлайн через Portsia' },
+                actions: { call: 'Позвонить', map: 'Карта', open: 'Открыто', closed: 'Закрыто' },
+                menu: {
+                    title: 'Наше Меню',
+                    categories: { coffee: 'Кофе', alternative: 'Что-то другое', seasonal: 'Осеннее Меню' },
+                    sizes: 'Цены указаны за размеры (S / L)',
+                },
+                about: {
+                    title: 'Душа Места',
+                    text: 'Coffee Society — это больше, чем просто кофейня. Это место в центре Риги, где встречаются отличный вкус и уютная атмосфера. Мы тщательно выбираем зерна, чтобы создавать напитки, согревающие тело и душу.',
+                },
+                location: {
+                    title: 'Расположение',
+                    address: 'Адрес',
+                    hours: 'Часы работы',
+                    contact: 'Связаться с нами',
+                },
+                wizard: {
+                    title: 'Не можете выбрать?',
+                    subtitle: 'Мы поможем найти идеальный напиток',
+                    start: 'Начать',
+                    question1: 'Как настроение?',
+                    question2: 'Какой вкус вы предпочитаете?',
+                    result: 'Мы рекомендуем:',
+                    restart: 'Попробовать снова',
+                    options: {
+                        hot: 'Хочу согреться',
+                        cold: 'Хочу освежиться',
+                        energy: 'Нужна энергия',
+                        relax: 'Хочу отдохнуть',
+                        sweet: 'Что-то сладкое',
+                        classic: 'Классический вкус',
+                    }
+                },
+            },
+        };
+
+        // --- COMPONENTS ---
+
+        const LanguageSwitcher = ({ current, onChange, className = '' }) => {
+            return (
+                <div className={`flex gap-3 text-sm font-medium tracking-wide ${className}`}>
+                    {['lv', 'en', 'ru'].map((lang) => (
+                        <button
+                            key={lang}
+                            onClick={() => onChange(lang)}
+                            className={`uppercase transition-colors duration-200 ${current === lang
+                                ? 'text-coffee-base border-b border-coffee-base'
+                                : 'text-gray-500 hover:text-coffee-base'
+                                }`}
+                        >
+                            {lang}
+                        </button>
+                    ))}
+                </div>
+            );
+        };
+
+        const StickyMobileBar = ({ t }) => {
+            return (
+                <div className="fixed bottom-0 left-0 right-0 z-50 bg-cream/95 backdrop-blur-md border-t border-coffee-light shadow-lg md:hidden pb-safe">
+                    <div className="flex justify-around items-center p-3 gap-4">
+                        <a
+                            href={`tel:${CONTACT_INFO.phone}`}
+                            className="flex-1 flex flex-col items-center justify-center gap-1 bg-coffee-base text-white py-3 rounded-lg shadow-sm active:bg-coffee-dark transition-colors"
+                        >
+                            <Phone size={20} />
+                            <span className="text-xs font-medium uppercase tracking-wider">{t.call}</span>
+                        </a>
+                        <a
+                            href="https://www.google.com/maps/search/?api=1&query=T%C4%93rbatas+iela+72+R%C4%ABga"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 flex flex-col items-center justify-center gap-1 bg-white text-coffee-dark border border-coffee-base py-3 rounded-lg shadow-sm active:bg-gray-50 transition-colors"
+                        >
+                            <MapPin size={20} />
+                            <span className="text-xs font-medium uppercase tracking-wider">{t.map}</span>
+                        </a>
+                    </div>
+                    <div className="h-safe-bottom w-full bg-transparent" />
+                </div>
+            );
+        };
+
+        const MenuSection = ({ t }) => {
+            const [activeTab, setActiveTab] = useState('seasonal');
+
+            const categories = [
+                { id: 'seasonal', label: t.categories.seasonal, icon: Sparkles },
+                { id: 'coffee', label: t.categories.coffee, icon: Coffee },
+                { id: 'alternative', label: t.categories.alternative, icon: Leaf },
+            ];
+
+            const currentItems = MENU_DATA.coffee.find(c => c.id === activeTab)?.items || [];
+
+            return (
+                <section id="menu" className="py-20 px-4 md:px-8 max-w-4xl mx-auto">
+                    <div className="text-center mb-12">
+                        <h2 className="font-serif text-4xl md:text-5xl text-black mb-4">{t.title}</h2>
+                        <div className="w-16 h-1 bg-coffee-base mx-auto" />
+                    </div>
+
+                    <div className="flex flex-wrap justify-center gap-2 mb-10">
+                        {categories.map((cat) => {
+                            const Icon = cat.icon;
+                            return (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => setActiveTab(cat.id)}
+                                    className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm md:text-base transition-all duration-300 ${activeTab === cat.id
+                                        ? 'bg-coffee-base text-white shadow-md transform scale-105'
+                                        : 'bg-white text-gray-600 hover:bg-coffee-light/20'
+                                        }`}
+                                >
+                                    <Icon size={16} />
+                                    {cat.label}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <div className="grid gap-6 md:grid-cols-2 bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-coffee-light/30">
+                        {currentItems.map((item, idx) => (
+                            <div key={idx} className="flex justify-between items-start pb-4 border-b border-dashed border-gray-200 last:border-0 last:pb-0">
+                                <div className="pr-4">
+                                    <h3 className="font-serif text-lg font-medium text-black flex items-center gap-2">
+                                        {item.name}
+                                        {item.isNew && (
+                                            <span className="text-[10px] font-bold uppercase tracking-wider bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">New</span>
+                                        )}
+                                    </h3>
+                                    {item.description && (
+                                        <p className="text-sm text-gray-500 mt-1 italic leading-relaxed">{item.description}</p>
+                                    )}
+                                </div>
+                                <span className="font-mono text-coffee-dark font-medium whitespace-nowrap">€ {item.price}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    <p className="text-center text-xs text-gray-400 mt-6 uppercase tracking-widest">{t.sizes}</p>
+                </section>
+            );
+        };
+
+        const CoffeeWizard = ({ t }) => {
+            const [step, setStep] = useState('intro');
+            const [mood, setMood] = useState(null);
+            const [recommendation, setRecommendation] = useState('');
+
+            const getRecommendation = (mood, flavor) => {
+                if (mood === 'energy' && flavor === 'classic') return 'Espresso / Flat White';
+                if (mood === 'energy' && flavor === 'sweet') return 'Riekstu-karameļu moka';
+                if (mood === 'relax' && flavor === 'classic') return 'Cappuccino';
+                if (mood === 'relax' && flavor === 'sweet') return 'Cotton Candy Latte';
+                return 'Latte';
+            };
+
+            const handleFlavor = (flavor) => {
+                if (mood) {
+                    setRecommendation(getRecommendation(mood, flavor));
+                    setStep('result');
+                }
+            };
+
+            return (
+                <section className="py-16 px-4 bg-coffee-base text-cream">
+                    <div className="max-w-md mx-auto text-center">
+                        <div className="bg-cream text-black p-8 rounded-2xl shadow-xl min-h-[300px] flex flex-col justify-center items-center transition-all duration-500">
+
+                            <Wand2 className="text-coffee-base mb-4 w-10 h-10" />
+
+                            {step === 'intro' && (
+                                <React.Fragment>
+                                    <h3 className="font-serif text-2xl mb-2">{t.title}</h3>
+                                    <p className="text-gray-600 mb-8">{t.subtitle}</p>
+                                    <button
+                                        onClick={() => setStep('mood')}
+                                        className="bg-black text-white px-8 py-3 rounded-full hover:bg-gray-800 transition-colors uppercase tracking-widest text-sm font-medium"
+                                    >
+                                        {t.start}
+                                    </button>
+                                </React.Fragment>
+                            )}
+
+                            {step === 'mood' && (
+                                <div className="w-full animate-fadeIn">
+                                    <h3 className="font-serif text-xl mb-6">{t.question1}</h3>
+                                    <div className="flex flex-col gap-3">
+                                        <button onClick={() => { setMood('energy'); setStep('flavor'); }} className="p-4 border border-gray-200 rounded-xl hover:bg-coffee-light/20 transition-colors">
+                                            ⚡️ {t.options.energy}
+                                        </button>
+                                        <button onClick={() => { setMood('relax'); setStep('flavor'); }} className="p-4 border border-gray-200 rounded-xl hover:bg-coffee-light/20 transition-colors">
+                                            🧘‍♀️ {t.options.relax}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {step === 'flavor' && (
+                                <div className="w-full animate-fadeIn">
+                                    <h3 className="font-serif text-xl mb-6">{t.question2}</h3>
+                                    <div className="flex flex-col gap-3">
+                                        <button onClick={() => handleFlavor('sweet')} className="p-4 border border-gray-200 rounded-xl hover:bg-coffee-light/20 transition-colors">
+                                            🍭 {t.options.sweet}
+                                        </button>
+                                        <button onClick={() => handleFlavor('classic')} className="p-4 border border-gray-200 rounded-xl hover:bg-coffee-light/20 transition-colors">
+                                            ☕️ {t.options.classic}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {step === 'result' && (
+                                <div className="w-full animate-fadeIn">
+                                    <p className="text-gray-500 text-sm mb-2">{t.result}</p>
+                                    <h3 className="font-serif text-3xl text-coffee-dark mb-8">{recommendation}</h3>
+                                    <button
+                                        onClick={() => setStep('intro')}
+                                        className="flex items-center justify-center gap-2 mx-auto text-gray-500 hover:text-black text-sm"
+                                    >
+                                        <RefreshCw size={14} />
+                                        {t.restart}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        // --- MAIN APP COMPONENT ---
+
+        const App = () => {
+            const [lang, setLang] = useState('lv');
+            const [isScrolled, setIsScrolled] = useState(false);
+
+            useEffect(() => {
+                const savedLang = localStorage.getItem('cs-lang');
+                if (savedLang && ['lv', 'en', 'ru'].includes(savedLang)) {
+                    setLang(savedLang);
+                }
+            }, []);
+
+            const handleLangChange = (newLang) => {
+                setLang(newLang);
+                localStorage.setItem('cs-lang', newLang);
+            };
+
+            useEffect(() => {
+                const handleScroll = () => setIsScrolled(window.scrollY > 50);
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            const t = TRANSLATIONS[lang];
+
+            return (
+                <div className="min-h-screen pb-16 md:pb-0 font-sans selection:bg-coffee-base selection:text-white">
+
+                    {/* Navigation */}
+                    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-cream/95 shadow-md py-3' : 'bg-transparent py-5'}`}>
+                        <div className="max-w-6xl mx-auto px-6 flex justify-between items-center">
+                            <div className="font-serif text-2xl font-bold tracking-tight text-black">
+                                coffee<span className="text-coffee-base">.</span>society
+                            </div>
+
+                            <div className="hidden md:flex gap-8 items-center text-sm font-medium text-gray-800">
+                                <a href="#menu" className="hover:text-coffee-base transition-colors">{t.nav.menu}</a>
+                                <a href="#about" className="hover:text-coffee-base transition-colors">{t.nav.about}</a>
+                                <a href="#location" className="hover:text-coffee-base transition-colors">{t.nav.location}</a>
+                            </div>
+
+                            <LanguageSwitcher current={lang} onChange={handleLangChange} />
+                        </div>
+                    </nav>
+
+                    {/* Hero Section */}
+                    <header className="relative h-screen flex items-center justify-center overflow-hidden">
+                        <div className="absolute inset-0 z-0">
+                            <img
+                                src="data/main2.jpg"
+                                alt="Coffee Shop Vibe"
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/30 md:bg-black/20" />
+                            {/* <div className="absolute inset-0 bg-gradient-to-t from-cream via-transparent to-transparent h-32 bottom-0" /> */}
+                        </div>
+
+                        <div className="relative z-10 text-center px-4 max-w-2xl mt-12 animate-fade-in-up">
+                            <h1 className="font-serif text-5xl md:text-7xl text-white mb-6 drop-shadow-lg leading-tight">
+                                Coffee Society
+                            </h1>
+                            <p className="text-cream text-lg md:text-xl font-light tracking-wide mb-10 drop-shadow-md">
+                                {t.hero.subheadline}
+                            </p>
+                            <div className="flex flex-col items-center gap-6">
+                                <a
+                                    href="#menu"
+                                    className="inline-block bg-white text-black px-8 py-4 rounded-none border border-white hover:bg-transparent hover:text-white transition-all duration-300 uppercase tracking-widest text-xs font-bold"
+                                >
+                                    {t.hero.cta}
+                                </a>
+
+                                {/* Portsia Partner Link */}
+                                <a
+                                    href="https://www.portsia.com"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="group flex items-center gap-2 text-white/90 hover:text-white transition-colors"
+                                >
+                                    <span className="text-sm font-light tracking-wide border-b border-transparent group-hover:border-white transition-all">
+                                        {t.hero.orderOnline}
+                                    </span>
+                                    <ExternalLink size={14} className="opacity-70 group-hover:opacity-100" />
+                                </a>
+                            </div>
+                        </div>
+
+                        <div className="absolute bottom-10 animate-bounce text-white/70">
+                            <ArrowDown size={24} />
+                        </div>
+                    </header>
+
+                    <MenuSection t={t.menu} />
+
+                    <CoffeeWizard t={t.wizard} />
+
+                    <section id="about" className="py-20 bg-white">
+                        <div className="max-w-6xl mx-auto px-6">
+                            <div className="grid md:grid-cols-2 gap-12 items-center">
+                                <div className="space-y-6">
+                                    <h2 className="font-serif text-4xl text-black">{t.about.title}</h2>
+                                    <div className="w-12 h-0.5 bg-coffee-base" />
+                                    <p className="text-gray-600 leading-relaxed text-lg font-light">
+                                        {t.about.text}
+                                    </p>
+                                    <div className="pt-4">
+                                        <img src="data/main.jpg" alt="Latte Art" className="rounded-lg shadow-lg aspect-video object-cover" />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <img src="data/img6.jpg" alt="Coffee beans" className="rounded-lg shadow hover:opacity-90 transition-opacity w-full h-48 object-cover" />
+                                    <img src="data/img2.jpg" alt="Cafe interior" className="rounded-lg shadow hover:opacity-90 transition-opacity w-full h-48 object-cover translate-y-8" />
+                                    <img src="data/img7.jpg" alt="Pastries" className="rounded-lg shadow hover:opacity-90 transition-opacity w-full h-48 object-cover" />
+                                    <img src="data/img4.jpg" alt="Barista" className="rounded-lg shadow hover:opacity-90 transition-opacity w-full h-48 object-cover translate-y-8" />
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="location" className="bg-cream-dark py-20">
+                        <div className="max-w-6xl mx-auto px-6">
+                            <div className="grid md:grid-cols-2 gap-12">
+                                <div>
+                                    <h2 className="font-serif text-3xl mb-8">{t.location.title}</h2>
+
+                                    <div className="space-y-8">
+                                        <div className="flex gap-4">
+                                            <div className="w-10 h-10 bg-coffee-base text-white rounded-full flex items-center justify-center shrink-0">
+                                                <MapPin size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-sm uppercase tracking-wider mb-1">{t.location.address}</h3>
+                                                <p className="text-gray-700">{CONTACT_INFO.address}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-4">
+                                            <div className="w-10 h-10 bg-coffee-base text-white rounded-full flex items-center justify-center shrink-0">
+                                                <Phone size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-sm uppercase tracking-wider mb-1">{t.location.contact}</h3>
+                                                <p className="text-gray-700">
+                                                    <a href={`tel:${CONTACT_INFO.phone}`} className="hover:underline">{CONTACT_INFO.phone}</a>
+                                                </p>
+                                                <a href={CONTACT_INFO.instagram} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 mt-2 text-coffee-dark hover:text-black">
+                                                    <Instagram size={16} /> @coffee__society_
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-4">
+                                            <div className="w-10 h-10 bg-coffee-base text-white rounded-full flex items-center justify-center shrink-0">
+                                                <Clock size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-sm uppercase tracking-wider mb-2">{t.location.hours}</h3>
+                                                <ul className="text-sm text-gray-700 space-y-1">
+                                                    {OPENING_HOURS.map((h, i) => (
+                                                        <li key={i} className="flex justify-between w-48 border-b border-gray-300 pb-1 border-dashed last:border-0">
+                                                            <span>{h.day}</span>
+                                                            <span className="font-medium">{h.time}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white p-2 shadow-lg rounded-xl h-[400px]">
+
+                                    <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d2175.4384624554928!2d24.1318722!3d56.9584215!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46eecfdb6a790895%3A0xd3f688827dbd7583!2sCoffee%20Society!5e0!3m2!1sen!2slv!4v1763911888347!5m2!1sen!2slv"
+                                        width="100%"
+                                        height="100%"
+                                        style={{ border: 0, borderRadius: '0.75rem' }}
+                                        allowFullScreen={true}
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer-when-downgrade"
+                                        title="Coffee Society Location"
+                                    ></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <footer className="bg-black text-white/40 py-8 text-center text-xs">
+                        <p>&copy; {new Date().getFullYear()} Coffee Society. All rights reserved.</p>
+                    </footer>
+
+                    <StickyMobileBar t={t.actions} />
+                </div>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(
+            <React.StrictMode>
+                <App />
+            </React.StrictMode>
+        );
+    </script>
+</body>
+
+</html>
